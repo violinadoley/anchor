@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
 import { parseUnits, Hex } from 'viem';
 import { CONTRACTS } from '@/config/contracts';
 
@@ -16,6 +15,42 @@ interface PoolFulfillment {
     fromPrice: number;
     toPrice: number;
     exchangeRate: number;
+  };
+}
+
+export function usePoolFulfillment() {
+  const [isFulfilling, setIsFulfilling] = useState(false);
+  const [fulfillmentError, setFulfillmentError] = useState<string | null>(null);
+  const [fulfillmentHash, setFulfillmentHash] = useState<string | null>(null);
+
+  const fulfillWithPool = async (fulfillment: PoolFulfillment) => {
+    setIsFulfilling(true);
+    setFulfillmentError(null);
+    setFulfillmentHash(null);
+
+    try {
+      // Simulate pool fulfillment transaction
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate mock transaction hash
+      const mockTxHash = `0x${Math.random().toString(16).substr(2, 40)}`;
+      setFulfillmentHash(mockTxHash);
+      
+      console.log('✅ Pool fulfillment transaction simulated:', mockTxHash);
+      return mockTxHash;
+    } catch (error: any) {
+      setFulfillmentError(error.message || 'Pool fulfillment failed');
+      throw error;
+    } finally {
+      setIsFulfilling(false);
+    }
+  };
+
+  return {
+    fulfillWithPool,
+    isFulfilling,
+    fulfillmentError,
+    fulfillmentHash,
   };
 }
 

@@ -1,4 +1,4 @@
-{
+ {
   "hardhat": {
     "network": "hardhat",
     "chainId": 31337,

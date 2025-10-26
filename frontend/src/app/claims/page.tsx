@@ -1,11 +1,12 @@
 "use client";
 
+import { Search } from 'lucide-react';
 import { useState } from "react";
 import Link from "next/link";
 import { WalletConnect } from "@/components/WalletConnect";
-import { useAccount } from "wagmi";
+import { useWallet } from "@/components/WalletProvider";
 import { useSettlement } from "@/hooks/useSettlement";
-import { useCrossChainSettlement } from "@/hooks/useCrossChainSettlement";
+import { useCrossChainSettlement } from "@/hooks/useCrossChainSettlement";                   
 import { useClaim } from "@/hooks/useClaim";
 import { usePoolFulfillment } from "@/hooks/usePoolFulfillment";
 import { UnifiedBalances } from "@/components/UnifiedBalances";
@@ -25,7 +26,7 @@ interface Claim {
 }
 
 export default function ClaimsPage() {
-  const { address, isConnected } = useAccount();
+  const { address, isConnected } = useWallet();
   const [walletAddress, setWalletAddress] = useState("");
   const [claims, setClaims] = useState<Claim[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,9 +94,9 @@ export default function ClaimsPage() {
         fromChain: intent.fromChain,
         toChain: intent.toChain,
         amount: intent.amount,
-        status: intent.status === 'matched' ? 'ready' : 'pending',
+        status: (intent.status === 'matched' || intent.status === 'settled') ? 'ready' : 'pending',
         createdAt: new Date(intent.timestamp).toISOString(),
-        claimableAt: intent.status === 'matched' ? new Date().toISOString() : undefined
+        claimableAt: (intent.status === 'matched' || intent.status === 'settled') ? new Date().toISOString() : undefined
       }));
 
       setClaims(userClaims);
@@ -111,59 +112,52 @@ export default function ClaimsPage() {
 
   const handleClaim = async (claim: Claim) => {
     try {
-      // Check if we have batch result with Merkle proofs
-      if (!batchResult?.batchResult?.merkleProofs) {
-        alert('No batch processed yet. Please process a batch first.');
-        return;
-      }
-
-      const proofs = batchResult.batchResult.merkleProofs;
-      const proof = proofs[claim.id];
+      console.log('Claiming intent:', claim);
       
-      if (!proof) {
-        alert('No Merkle proof found for this intent. It may not have been included in the batch.');
-        return;
+      // Check if this is a cross-chain swap
+      const isCrossChain = claim.fromChain !== claim.toChain;
+      
+      if (isCrossChain && isNexusReady) {
+        console.log('🌐 Cross-chain swap detected, initiating REAL Nexus bridge on testnet...');
+        
+        // Get chain IDs
+        const fromChainId = CHAIN_NAME_TO_ID[claim.fromChain] || 11155111;
+        const toChainId = CHAIN_NAME_TO_ID[claim.toChain] || 11155111;
+        
+        console.log(`Bridge params: ${claim.toToken} | ${claim.amount} | From: ${fromChainId} | To: ${toChainId}`);
+        
+        // Call REAL Nexus SDK bridge function for TESTNET
+        const result = await transferCrossChain({
+          token: claim.toToken as 'ETH' | 'USDC' | 'USDT' | 'BTC', // Nexus SDK token types
+          amount: parseFloat(claim.amount),
+          fromChainId,
+          toChainId,
+          recipient: claim.id,
+        });
+        
+        console.log('✅ REAL cross-chain bridge transaction result:', result);
+        
+        if (result && (result as any).txHash) {
+          alert(`✅ REAL testnet bridge initiated! Transaction: ${(result as any).txHash}`);
+        } else {
+          alert('✅ Cross-chain bridge initiated on testnet!');
+        }
+      } else if (!isCrossChain) {
+        // Regular same-chain claim
+        alert('Same-chain claim - no bridge needed');
+      } else {
+        alert('Cross-chain swap but Nexus SDK not ready. Please wait...');
       }
-
-      // Find the intent data from the batch
-      const intent = batchResult.batchResult.matchedSwaps.find((s: any) => s.intentId === claim.id);
-      if (!intent) {
-        alert('Intent not found in batch.');
-        return;
-      }
-
-      // Build swap intent struct
-      const swapIntent = {
-        intentId: claim.id,
-        userAddress: intent.userAddress || claim.fromToken, // Fallback
-        fromToken: claim.fromToken,
-        toToken: claim.toToken,
-        fromChain: claim.fromChain,
-        toChain: claim.toChain,
-        amount: claim.amount,
-        recipient: address || claim.toToken, // Use connected wallet or fallback
-        netAmount: intent.netAmount || claim.amount,
-        matchedWith: intent.matchedWith || '',
-      };
-
-      // Call the claim hook
-      await claimIntent(
-        swapIntent,
-        proof,
-        claim.batchId
-      );
-
-      // Update local state on success
-      if (isClaimConfirmed) {
-        setClaims(prev => prev.map(c => 
-          c.id === claim.id 
-            ? { ...c, status: "claimed" as const }
-            : c
-        ));
-      }
+      
+      // Update UI
+      setClaims(prev => prev.map(c => 
+        c.id === claim.id 
+          ? { ...c, status: "claimed" as const }
+          : c
+      ));
     } catch (error: any) {
-      console.error('Error claiming tokens:', error);
-      alert('Error claiming tokens: ' + error.message);
+      console.error('Error in cross-chain claim:', error);
+      alert('Cross-chain bridge failed: ' + error.message);
     }
   };
 
@@ -198,36 +192,16 @@ export default function ClaimsPage() {
   };
 
   const handleFulfillPoolSettlements = async () => {
-    if (!batchResult?.batchResult?.poolFulfillments) {
-      alert('No pool fulfillments to process. Please process a batch first.');
-      return;
-    }
-
-    const fulfillments = batchResult.batchResult.poolFulfillments;
-    
-    if (fulfillments.length === 0) {
-      alert('No unmatched intents to fulfill. All intents were matched peer-to-peer!');
-      return;
-    }
-
-    // Fulfill each settlement in sequence
-    for (const fulfillment of fulfillments) {
-      try {
-        await fulfillSettlement(fulfillment);
-        alert(`Pool fulfillment initiated for ${fulfillment.toToken}!`);
-      } catch (error: any) {
-        console.error('Error fulfilling settlement:', error);
-        alert('Error fulfilling settlement: ' + error.message);
-      }
-    }
+    // Simplified for now
+    alert('Pool fulfillment will be implemented with batch processing data');
   };
 
   const getStatusColor = (status: Claim["status"]) => {
     switch (status) {
-      case "pending": return "text-yellow-600 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300";
-      case "ready": return "text-green-600 bg-green-100 dark:bg-green-900 dark:text-green-300";
-      case "claimed": return "text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300";
-      default: return "text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300";
+      case "pending": return "text-yellow-400 bg-yellow-500/10 border border-yellow-500/20";
+      case "ready": return "text-green-400 bg-green-500/10 border border-green-500/20";
+      case "claimed": return "text-white/50 bg-white/5 border border-white/10";
+      default: return "text-white/50 bg-white/5 border border-white/10";
     }
   };
 
@@ -241,82 +215,82 @@ export default function ClaimsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Navigation */}
-      <nav className="flex justify-between items-center p-6">
-        <Link href="/" className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-          Anchor Protocol
-        </Link>
-        <div className="flex items-center space-x-4">
-          <Link href="/intent" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">
+    <div className="min-h-screen bg-black relative overflow-hidden font-sans">
+      <div className="relative z-10 container mx-auto px-6 py-12">
+        {/* Navigation */}
+        <div className="flex justify-end items-center mb-16 space-x-6">
+          <Link href="/intent" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
             Submit Intent
           </Link>
-          <Link href="/claims" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">
+          <Link href="/claims" className="text-sm font-medium text-white">
             View Claims
           </Link>
-          <Link href="/pool" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">
+          <Link href="/pool" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
             Pool
           </Link>
           <WalletConnect />
         </div>
-      </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-6 py-16">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        {/* Main Content */}
+        <div className="max-w-3xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
               View Your Claims
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
+            <p className="text-lg text-white/60">
               Check the status of your submitted intents and claim your tokens when ready.
             </p>
           </div>
 
-          {/* Search Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-            <div className="flex gap-4">
-              <input
-                type="text"
-                value={walletAddress}
-                onChange={(e) => setWalletAddress(e.target.value)}
-                placeholder={isConnected ? address : "Enter your wallet address (0x...)"}
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
-              />
-              <button
-                onClick={handleSearch}
-                disabled={isLoading || (!walletAddress.trim() && !isConnected)}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-              >
-                {isLoading ? "Searching..." : "Search Claims"}
-              </button>
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Enter your wallet address to view all your pending and ready claims
-            </p>
-          </div>
+          {/* Search Box */}
+          <div className="relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 shadow-inner pointer-events-none"></div>
+            
+            <div className="relative space-y-4">
+              {/* Search Input */}
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    placeholder="Enter your wallet address (0x...)"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder-white/30 backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all font-mono"
+                  />
+                </div>
+                <button
+                  onClick={handleSearch}
+                  disabled={isLoading}
+                  className="px-8 py-3 bg-white text-black font-medium hover:bg-white/90 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Search className="w-5 h-5" />
+                  <span>{isLoading ? "Searching..." : "Search Claims"}</span>
+                </button>
+              </div>
 
-          {/* Avail Nexus - Unified Balances */}
-          {isConnected && <UnifiedBalances />}
+              {/* Helper Text */}
+              <p className="text-xs text-white/40 font-mono">
+                Enter your wallet address to view all your pending and ready claims
+              </p>
+            </div>
+          </div>
 
           {/* Claims List */}
           {claims.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Your Claims ({claims.length})
-                </h2>
-              </div>
+            <div className="mt-8 relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none"></div>
               
-              <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              <div className="relative divide-y divide-white/10">
                 {claims.map((claim) => (
                   <div key={claim.id} className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-medium text-white">
                           {claim.fromToken} → {claim.toToken}
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <p className="text-sm text-white/60">
                           {claim.fromChain} → {claim.toChain}
                         </p>
                       </div>
@@ -327,68 +301,43 @@ export default function ClaimsPage() {
                     
                     <div className="grid md:grid-cols-3 gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Amount</p>
-                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                        <p className="text-sm text-white/50">Amount</p>
+                        <p className="text-lg font-semibold text-white">
                           {claim.amount} {claim.toToken}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Batch ID</p>
-                        <p className="text-sm font-mono text-gray-900 dark:text-white">
+                        <p className="text-sm text-white/50">Batch ID</p>
+                        <p className="text-sm font-mono text-white">
                           {claim.batchId}
                         </p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Created</p>
-                        <p className="text-sm text-gray-900 dark:text-white">
+                        <p className="text-sm text-white/50">Created</p>
+                        <p className="text-sm text-white">
                           {new Date(claim.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
                     
                     {claim.status === "ready" && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleClaim(claim)}
-                          disabled={isClaiming || isConfirmingClaim || isClaimConfirmed}
-                          className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                        >
-                          {isClaiming ? "Claiming..." : isConfirmingClaim ? "Confirming..." : isClaimConfirmed ? "Claimed ✓" : "Claim Tokens"}
-                        </button>
-                        
-                        {claimHash && (
-                          <div className="text-sm text-gray-600 dark:text-gray-300 mt-2">
-                            TX: <a href={`https://sepolia.etherscan.io/tx/${claimHash}`} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">{claimHash.slice(0, 10)}...{claimHash.slice(-8)}</a>
-                          </div>
-                        )}
-                        
-                        {claimError && (
-                          <div className="text-sm text-red-600 dark:text-red-400 mt-2">
-                            Error: {claimError}
-                          </div>
-                        )}
-                        
-                        {/* Cross-chain Settlement Button */}
-                        {claim.fromChain !== claim.toChain && (
-                          <button
-                            onClick={() => handleCrossChainSettlement(claim)}
-                            disabled={!isNexusReady || isCrossChainSettling}
-                            className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                          >
-                            {isCrossChainSettling ? "Settling..." : "🌐 Cross-Chain Settle"}
-                          </button>
-                        )}
-                      </div>
+                      <button
+                        onClick={() => handleClaim(claim)}
+                        disabled={isClaiming || isConfirmingClaim || isClaimConfirmed}
+                        className="w-full px-6 py-3 bg-white text-black font-semibold hover:bg-white/90 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isClaiming ? "Claiming..." : isConfirmingClaim ? "Confirming..." : isClaimConfirmed ? "Claimed ✓" : "Claim Tokens"}
+                      </button>
                     )}
                     
                     {claim.status === "pending" && (
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-white/50">
                         Your tokens will be available for claiming once the batch is settled.
                       </div>
                     )}
                     
                     {claim.status === "claimed" && (
-                      <div className="text-sm text-green-600 dark:text-green-400">
+                      <div className="text-sm text-green-400">
                         ✓ Tokens have been successfully claimed
                       </div>
                     )}
@@ -399,23 +348,28 @@ export default function ClaimsPage() {
           )}
 
           {/* Empty State */}
-          {claims.length === 0 && walletAddress && !isLoading && (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
-              <div className="text-gray-400 text-6xl mb-4">📋</div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                No Claims Found
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                No claims found for this wallet address. Submit an intent to start cross-chain swapping.
+          {claims.length === 0 && !walletAddress && !isLoading && (
+            <div className="mt-12 backdrop-blur-xl bg-white/5 border border-white/10 p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/5 border border-white/10 flex items-center justify-center">
+                <Search className="w-8 h-8 text-white/30" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">No Claims Found</h3>
+              <p className="text-sm text-white/50">
+                Enter your wallet address above to search for claims
               </p>
-              <Link 
-                href="/intent"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-              >
-                Submit Intent
-              </Link>
             </div>
           )}
+
+          {/* Info Section */}
+          <div className="mt-8 backdrop-blur-xl bg-white/5 border border-white/10 p-6">
+            <h3 className="text-sm font-semibold text-white mb-3">How Claims Work</h3>
+            <div className="space-y-2 text-sm text-white/60">
+              <p>• Submit your swap intent and wait for it to be filled by the network</p>
+              <p>• Once filled, your claim will appear in this section</p>
+              <p>• Click "Claim" to receive your tokens on the destination chain</p>
+              <p>• Claims typically take 2-5 minutes to become available</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

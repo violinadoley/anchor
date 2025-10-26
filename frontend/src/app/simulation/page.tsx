@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import Navbar from '@/components/Navbar';
+import Link from "next/link";
+import { PlayCircle, RotateCcw, TrendingUp, Zap, Layers3, DollarSign } from 'lucide-react';
 
 interface SimulatedIntent {
   id: string;
@@ -545,172 +546,246 @@ export default function SimulationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
-      <Navbar />
-      
-      <div className="container mx-auto px-4 py-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-4">
-            <h1 className="text-3xl font-bold mb-1 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-black relative overflow-hidden font-sans">
+      <div className="relative z-10 container mx-auto px-6 py-12">
+        {/* Navigation */}
+        <div className="flex justify-end items-center mb-16 space-x-6">
+          <Link href="/intent" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
+            Submit Intent
+          </Link>
+          <Link href="/claims" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
+            View Claims
+          </Link>
+          <Link href="/pool" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
+            Pool
+          </Link>
+          <Link href="/simulation" className="text-sm font-medium text-white">
+            Simulation
+          </Link>
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
               Real-Time Netting Demo
             </h1>
-            <p className="text-xs text-gray-400">
-              <span className="text-green-400">✓ REAL backend API</span> - See actual multilateral netting
-            </p>
           </div>
 
-          {!isRunning && !batchResult && (
-            <div className="text-center mb-4">
-              <button
-                onClick={startSimulation}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg text-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
-              >
-                🚀 Start Simulation
-              </button>
-              <p className="text-gray-400 text-xs mt-2">
-                Backend: <code className="text-blue-400">cd offchain && node src/pyth-official-engine.js</code>
-              </p>
-            </div>
-          )}
+          {/* Glassmorphic Container */}
+          <div className="relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl p-8 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 shadow-inner pointer-events-none"></div>
+            
+            <div className="relative">
+              {!isRunning && !batchResult && (
+                <div className="text-center py-8">
+                  <button
+                    onClick={startSimulation}
+                    className="px-8 py-4 bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-3 mx-auto"
+                  >
+                    <PlayCircle className="w-6 h-6" />
+                    <span>Start Simulation</span>
+                  </button>
+                </div>
+              )}
 
-          {(isRunning || batchResult) && (
-            <div className="flex items-center justify-center gap-4 mb-3">
-              <div className="px-4 py-1 bg-gray-800 rounded-full">
-                <span className="text-blue-400 font-mono text-sm">
-                  Time: {timer / 10}s
-                </span>
-              </div>
-              {currentStep && (
-                <div className="text-sm text-gray-300 max-w-md truncate">
-                  {currentStep}
+              {(isRunning || batchResult) && (
+                <div className="space-y-6">
+                  {/* Status Bar */}
+                  {(isRunning || batchResult) && (
+                    <div className="flex items-center justify-center gap-4 backdrop-blur-xl bg-white/5 border border-white/10 px-4 py-3 rounded-lg">
+                      <div className="text-white/70 font-mono text-sm">
+                        ⏱ Time: {timer / 10}s
+                      </div>
+                      {currentStep && (
+                        <div className="text-sm text-white/50 max-w-md truncate">
+                          {currentStep}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Simulated Intents */}
+                  {simulatedIntents.length > 0 && (
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-4">📋 Simulated Intents</h2>
+                      <div className="grid grid-cols-5 gap-3 max-h-48 overflow-y-auto">
+                        {simulatedIntents.map((intent) => (
+                          <div key={intent.id} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-3 text-xs hover:bg-white/10 transition-colors">
+                            <div className="text-white/50 truncate mb-1 font-mono">{intent.userAddress.slice(0, 8)}</div>
+                            <div className="font-semibold text-white">
+                              {intent.amount} {intent.fromToken} → {intent.toToken}
+                            </div>
+                            <div className="text-white/40 text-xs">
+                              {intent.fromChain} → {intent.toChain}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Batch Results */}
+                  {batchResult && (
+                    <div className="space-y-6">
+                      {/* Matching Stats */}
+                      <div className="grid grid-cols-4 gap-4">
+                        <div className="backdrop-blur-xl bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 text-center">
+                          <div className="text-3xl font-bold text-blue-400 mb-1">{batchResult.matchedSwaps}</div>
+                          <div className="text-blue-200 text-sm">P2P Matched</div>
+                        </div>
+                        <div className="backdrop-blur-xl bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 text-center">
+                          <div className="text-3xl font-bold text-purple-400 mb-1">{batchResult.poolFulfillments}</div>
+                          <div className="text-purple-200 text-sm">Pool Filled</div>
+                        </div>
+                      </div>
+
+                      {/* Efficiency Gains */}
+                      <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-6">
+                        <div className="text-center mb-6 pb-4 border-b border-white/10">
+                          <h2 className="text-2xl font-bold text-white mb-2">Efficiency Gains</h2>
+                          <p className="text-sm text-white/50">
+                            Traditional AMM: All {batchResult.totalIntents} swaps hit pool individually • 
+                            Anchor: {batchResult.matchedSwaps} P2P matched, only {batchResult.poolFulfillments} hit pool
+                          </p>
+                        </div>
+
+                        {/* Detailed Comparison */}
+                        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
+                          <h3 className="text-lg font-bold text-white mb-4 text-center">Cost Breakdown</h3>
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="backdrop-blur-xl bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                              <div className="text-sm text-red-300 mb-2 flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4" />
+                                Traditional AMM
+                              </div>
+                              <div className="text-2xl font-bold text-red-400 mb-1">
+                                ${batchResult.comparison.traditionalSlippage.toFixed(2)}
+                              </div>
+                              <div className="text-xs text-white/50">Total slippage across all swaps</div>
+                            </div>
+                            <div className="backdrop-blur-xl bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                              <div className="text-sm text-green-300 mb-2 flex items-center gap-2">
+                                <Zap className="w-4 h-4" />
+                                Anchor Protocol
+                              </div>
+                              <div className="text-2xl font-bold text-green-400 mb-1">
+                                ${batchResult.comparison.anchorSlippage.toFixed(2)}
+                              </div>
+                              <div className="text-xs text-white/50">Slippage on {batchResult.poolFulfillments} pool swaps</div>
+                            </div>
+                          </div>
+                          <div className="space-y-2 text-sm text-white/60 pt-4 border-t border-white/10">
+                            <div className="flex justify-between">
+                              <span>Total Volume:</span>
+                              <span className="text-white font-semibold">${batchResult.comparison.totalVolume.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Pool Volume:</span>
+                              <span className="text-white font-semibold">${batchResult.comparison.poolVolume.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Liquidity Needed:</span>
+                              <span className="text-red-400">${batchResult.comparison.grossLiquidity.toLocaleString()}</span>
+                              <span className="text-white/40">vs</span>
+                              <span className="text-green-400">${batchResult.comparison.netLiquidity.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Capital Freed:</span>
+                              <span className="text-green-400 font-bold">${(batchResult.comparison.grossLiquidity - batchResult.comparison.netLiquidity).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Gas Savings:</span>
+                              <span className="text-white font-semibold">${batchResult.comparison.gasCostSaved.toFixed(2)}</span>
+                            </div>
+                            <div className="pt-3 mt-3 border-t border-white/10 text-center">
+                              <div className="text-lg font-bold text-green-400">
+                                Total Savings: ${((batchResult.comparison.traditionalSlippage - batchResult.comparison.anchorSlippage) + batchResult.comparison.gasCostSaved).toFixed(2)}
+                              </div>
+                              <div className="text-xs text-white/50 mt-1">
+                                Slippage: {Math.round(((batchResult.comparison.traditionalSlippage - batchResult.comparison.anchorSlippage) / batchResult.comparison.traditionalSlippage) * 100)}% • Gas: {batchResult.savings.gasSavings}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Key Metrics Grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Layers3 className="w-5 h-5 text-green-400" />
+                              <span className="text-white/70 text-sm">P2P Matching Rate</span>
+                            </div>
+                            <div className="text-4xl font-bold text-green-400 mb-1">{batchResult.savings.liquidityReduction}</div>
+                            <div className="text-xs text-white/50">
+                              {batchResult.matchedSwaps} of {batchResult.totalIntents} swaps matched P2P (0% slippage)
+                            </div>
+                          </div>
+                          
+                          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TrendingUp className="w-5 h-5 text-blue-400" />
+                              <span className="text-white/70 text-sm">Slippage Reduction</span>
+                            </div>
+                            <div className="text-4xl font-bold text-blue-400 mb-1">{batchResult.savings.slippageReduction}</div>
+                            <div className="text-xs text-white/50">
+                              Saves {batchResult.savings.slippageReduction} vs AMM
+                            </div>
+                          </div>
+                          
+                          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Zap className="w-5 h-5 text-purple-400" />
+                              <span className="text-white/70 text-sm">Gas Savings</span>
+                            </div>
+                            <div className="text-4xl font-bold text-purple-400 mb-1">{batchResult.savings.gasSavings}</div>
+                            <div className="text-xs text-white/50">
+                              1 batch transaction vs {batchResult.totalIntents} individual swaps
+                            </div>
+                          </div>
+                          
+                          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <DollarSign className="w-5 h-5 text-cyan-400" />
+                              <span className="text-white/70 text-sm">Capital Efficiency</span>
+                            </div>
+                            <div className="text-4xl font-bold text-cyan-400 mb-1">{batchResult.savings.capitalEfficiency}</div>
+                            <div className="text-xs text-white/50">
+                              Less liquidity needed vs CFMM (net vs gross)
+                            </div>
+                          </div>
+
+                          <div className="col-span-2 backdrop-blur-xl bg-gradient-to-br from-orange-500/10 to-pink-500/10 border border-orange-500/20 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Zap className="w-5 h-5 text-orange-400" />
+                              <span className="text-white/70 text-sm font-semibold">Overall Efficiency Gain</span>
+                            </div>
+                            <div className="text-4xl font-bold text-orange-400 mb-1">{batchResult.savings.efficiencyGain}</div>
+                            <div className="text-xs text-white/50">
+                              Weighted average improvement across all metrics
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Run Again Button */}
+                      <div className="text-center">
+                        <button
+                          onClick={startSimulation}
+                          className="px-8 py-4 bg-white text-black font-semibold text-lg hover:bg-white/90 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-3 mx-auto"
+                        >
+                          <RotateCcw className="w-5 h-5" />
+                          <span>Run Again</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          )}
-
-          {simulatedIntents.length > 0 && (
-            <div className="mb-3">
-              <h2 className="text-lg font-bold mb-2">10 Simulated Intents</h2>
-              <div className="grid grid-cols-5 gap-2 max-h-48 overflow-y-auto">
-                {simulatedIntents.map((intent) => (
-                  <div key={intent.id} className="bg-gray-900 rounded p-2 border border-gray-800 text-xs">
-                    <div className="text-gray-400 truncate mb-1">{intent.userAddress.slice(0, 8)}</div>
-                    <div className="font-semibold">
-                      {intent.amount} {intent.fromToken} → {intent.toToken}
-                    </div>
-                    <div className="text-gray-500 text-xs">
-                      {intent.fromChain} → {intent.toChain}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {batchResult && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-4 gap-3">
-                <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold mb-1">{batchResult.matchedSwaps}</div>
-                  <div className="text-blue-200 text-xs">P2P Matched</div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-3 text-center">
-                  <div className="text-2xl font-bold mb-1">{batchResult.poolFulfillments}</div>
-                  <div className="text-purple-200 text-xs">Pool Filled</div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg p-4 border border-gray-700">
-                <div className="text-center mb-4 pb-3 border-b border-gray-700">
-                  <h2 className="text-lg font-bold mb-2">Efficiency Gains: Anchor vs Traditional AMM</h2>
-                  <p className="text-xs text-gray-400">
-                    Traditional AMM: All {batchResult.totalIntents} swaps hit the pool individually • Anchor: {batchResult.matchedSwaps} swaps matched P2P, only {batchResult.poolFulfillments} hit pool
-                  </p>
-                </div>
-
-                {/* Detailed Cost Comparison */}
-                <div className="bg-gray-800 rounded-lg p-3 mb-4 border border-gray-600">
-                  <h3 className="text-sm font-bold mb-3 text-center">Cost Breakdown</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-red-900/30 border border-red-700 rounded p-2">
-                      <div className="text-xs text-red-300 mb-1">Traditional AMM</div>
-                      <div className="text-lg font-bold text-red-400">${batchResult.comparison.traditionalSlippage.toFixed(2)}</div>
-                      <div className="text-xs text-gray-400">Total slippage across all swaps</div>
-                    </div>
-                    <div className="bg-green-900/30 border border-green-700 rounded p-2">
-                      <div className="text-xs text-green-300 mb-1">Anchor Protocol</div>
-                      <div className="text-lg font-bold text-green-400">${batchResult.comparison.anchorSlippage.toFixed(2)}</div>
-                      <div className="text-xs text-gray-400">Slippage on {batchResult.poolFulfillments} pool swaps</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-gray-700 text-center">
-                    <div className="text-xs text-gray-400 mb-1">Total Volume: <span className="text-white font-semibold">${batchResult.comparison.totalVolume.toLocaleString()}</span> • Pool Volume: <span className="text-white font-semibold">${batchResult.comparison.poolVolume.toLocaleString()}</span></div>
-                    <div className="text-xs text-gray-400 mb-1">Liquidity Needed: <span className="text-red-400">${batchResult.comparison.grossLiquidity.toLocaleString()}</span> (CFMM) vs <span className="text-green-400">${batchResult.comparison.netLiquidity.toLocaleString()}</span> (Anchor)</div>
-                    <div className="text-xs text-gray-400 mb-2">Capital Freed: <span className="text-green-400 font-bold">${(batchResult.comparison.grossLiquidity - batchResult.comparison.netLiquidity).toLocaleString()}</span> • Gas Savings: ${batchResult.comparison.gasCostSaved.toFixed(2)}</div>
-                    <div className="text-sm font-bold text-green-400 mt-2">
-                      Total Savings: ${((batchResult.comparison.traditionalSlippage - batchResult.comparison.anchorSlippage) + batchResult.comparison.gasCostSaved).toFixed(2)} (Slippage: {Math.round(((batchResult.comparison.traditionalSlippage - batchResult.comparison.anchorSlippage) / batchResult.comparison.traditionalSlippage) * 100)}% • Gas: {batchResult.savings.gasSavings})
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-                    <div className="text-4xl font-bold text-green-400 mb-1">{batchResult.savings.liquidityReduction}</div>
-                    <div className="text-gray-300 text-xs mb-1">P2P Matching Rate</div>
-                    <div className="text-xs text-gray-500">
-                      {batchResult.matchedSwaps} of {batchResult.totalIntents} swaps matched P2P (0% slippage)
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-                    <div className="text-4xl font-bold text-blue-400 mb-1">{batchResult.savings.slippageReduction}</div>
-                    <div className="text-gray-300 text-xs mb-1">Slippage Reduction</div>
-                    <div className="text-xs text-gray-500">
-                      Saves {batchResult.savings.slippageReduction} vs AMM (all swaps hit pool)
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-                    <div className="text-4xl font-bold text-purple-400 mb-1">{batchResult.savings.gasSavings}</div>
-                    <div className="text-gray-300 text-xs mb-1">Gas Savings</div>
-                    <div className="text-xs text-gray-500">
-                      1 batch transaction vs {batchResult.totalIntents} individual swaps
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-                    <div className="text-4xl font-bold text-cyan-400 mb-1">{batchResult.savings.capitalEfficiency}</div>
-                    <div className="text-gray-300 text-xs mb-1">Capital Efficiency</div>
-                    <div className="text-xs text-gray-500">
-                      Less liquidity needed vs CFMM (net vs gross)
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-                    <div className="text-4xl font-bold text-orange-400 mb-1">{batchResult.savings.efficiencyGain}</div>
-                    <div className="text-gray-300 text-xs mb-1">Overall Efficiency Gain</div>
-                    <div className="text-xs text-gray-500">
-                      Average improvement across all metrics
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <button
-                  onClick={() => {
-                    setIsRunning(false);
-                    setBatchResult(null);
-                    setSimulatedIntents([]);
-                    setTimer(0);
-                  }}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg text-lg font-semibold hover:from-purple-600 hover:to-pink-700 transition-all duration-300"
-                >
-                  🔄 Run Again
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

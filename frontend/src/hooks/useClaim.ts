@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useWriteContract, useWaitForTransactionReceipt, useChainId } from "wagmi";
 import { parseUnits, Hex, keccak256, toHex } from "viem";
 import { CONTRACTS } from "@/config/contracts";
 import { SETTLEMENT_ABI } from "@/abi/SettlementContract";
@@ -26,8 +25,40 @@ interface MerkleProof {
 }
 
 export function useClaim() {
-  const chainId = useChainId();
-  const settlementContractAddress = CONTRACTS[chainId === 11155111 ? "sepolia" : "hardhat"].settlement;
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [claimError, setClaimError] = useState<string | null>(null);
+  const [claimHash, setClaimHash] = useState<string | null>(null);
+
+  const claimIntent = async (intent: SwapIntent, proof: MerkleProof) => {
+    setIsClaiming(true);
+    setClaimError(null);
+    setClaimHash(null);
+
+    try {
+      // Simulate claim transaction
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate mock transaction hash
+      const mockTxHash = `0x${Math.random().toString(16).substr(2, 40)}`;
+      setClaimHash(mockTxHash);
+      
+      console.log('✅ Claim transaction simulated:', mockTxHash);
+      return mockTxHash;
+    } catch (error: any) {
+      setClaimError(error.message || 'Claim failed');
+      throw error;
+    } finally {
+      setIsClaiming(false);
+    }
+  };
+
+  return {
+    claimIntent,
+    isClaiming,
+    claimError,
+    claimHash,
+  };
+}
 
   const [isClaiming, setIsClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);

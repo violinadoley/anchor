@@ -99,151 +99,154 @@ export default function PoolPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Navigation */}
-      <nav className="flex justify-between items-center p-6">
-        <Link href="/" className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-          Anchor Protocol
-        </Link>
-        <div className="flex items-center space-x-4">
-          <Link href="/intent" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">
+    <div className="min-h-screen bg-black relative overflow-hidden font-sans">
+      <div className="relative z-10 container mx-auto px-6 py-12">
+        {/* Navigation */}
+        <div className="flex justify-end items-center mb-16 space-x-6">
+          <Link href="/intent" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
             Submit Intent
           </Link>
-          <Link href="/claims" className="text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400">
+          <Link href="/claims" className="text-sm font-medium text-white/50 hover:text-white/80 transition-colors">
             View Claims
           </Link>
-          <Link href="/pool" className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-semibold">
+          <Link href="/pool" className="text-sm font-medium text-white">
             Pool
           </Link>
           <WalletConnect />
         </div>
-      </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-6 py-16">
+        {/* Main Content */}
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
               Unified Liquidity Pool
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300">
+            <p className="text-lg text-white/60 mb-2">
               Provide liquidity to fill unmatched swap intents
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              Contract: <span className="font-mono">{poolAddress?.slice(0, 10)}...{poolAddress?.slice(-8)}</span>
+            <p className="text-sm text-white/40 font-mono">
+              Contract: {poolAddress?.slice(0, 10)}...{poolAddress?.slice(-8)}
             </p>
           </div>
 
-          {/* Pool Statistics */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Pool Balances</h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">ETH</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {parseFloat(ethBalance).toFixed(4)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pool Balance</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">USDC</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {parseFloat(usdcBalance).toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pool Balance</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">USDT</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {parseFloat(usdtBalance).toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pool Balance</p>
+          {/* Pool Balances Section */}
+          <div className="relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl p-8 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 shadow-inner pointer-events-none"></div>
+            
+            <div className="relative">
+              <h2 className="text-2xl font-bold text-white mb-6">Pool Balances</h2>
+              
+              <div className="grid grid-cols-3 gap-4">
+                {/* ETH Balance */}
+                <div className="backdrop-blur-xl bg-white/5 border border-white/10 p-6">
+                  <p className="text-sm text-white/50 mb-2 font-mono">ETH</p>
+                  <p className="text-3xl font-bold text-white mb-1 font-mono">{parseFloat(ethBalance).toFixed(4)}</p>
+                  <p className="text-xs text-white/40">Pool Balance</p>
+                </div>
+
+                {/* USDC Balance */}
+                <div className="backdrop-blur-xl bg-white/5 border border-white/10 p-6">
+                  <p className="text-sm text-white/50 mb-2 font-mono">USDC</p>
+                  <p className="text-3xl font-bold text-white mb-1 font-mono">{parseFloat(usdcBalance).toFixed(2)}</p>
+                  <p className="text-xs text-white/40">Pool Balance</p>
+                </div>
+
+                {/* USDT Balance */}
+                <div className="backdrop-blur-xl bg-white/5 border border-white/10 p-6">
+                  <p className="text-sm text-white/50 mb-2 font-mono">USDT</p>
+                  <p className="text-3xl font-bold text-white mb-1 font-mono">{parseFloat(usdtBalance).toFixed(2)}</p>
+                  <p className="text-xs text-white/40">Pool Balance</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Deposit Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Deposit Liquidity
-            </h2>
-            <div className="space-y-4">
+          {/* Deposit Liquidity Section */}
+          <div className="relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl p-8 mb-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 shadow-inner pointer-events-none"></div>
+            
+            <div className="relative space-y-6">
+              <h2 className="text-2xl font-bold text-white">Deposit Liquidity</h2>
+
+              {/* Select Token */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Select Token
-                </label>
-                <select
+                <label className="block text-sm font-medium text-white/70 mb-2">Select Token</label>
+                <select 
                   value={selectedToken}
                   onChange={(e) => setSelectedToken(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all font-mono"
                 >
                   {tokens.map((token) => (
-                    <option key={token} value={token}>
-                      {token}
-                    </option>
+                    <option key={token} value={token}>{token}</option>
                   ))}
                 </select>
               </div>
+
+              {/* Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Amount
-                </label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Amount</label>
                 <input
-                  type="number"
+                  type="text"
+                  placeholder="0.00"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder-white/30 backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all font-mono"
                 />
               </div>
+
+              {/* Deposit Button */}
               <button
                 onClick={handleDeposit}
                 disabled={!isConnected || isPending || isConfirming || isConfirmed}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full px-6 py-4 bg-white text-black font-semibold text-base hover:bg-white/90 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending ? "Depositing..." : isConfirming ? "Confirming..." : isConfirmed ? "Deposited ✓" : "Deposit Liquidity"}
               </button>
             </div>
           </div>
 
-          {/* Withdraw Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Withdraw Liquidity
-            </h2>
-            <div className="space-y-4">
+          {/* Withdraw Liquidity Section */}
+          <div className="relative backdrop-blur-2xl bg-white/5 border border-white/10 shadow-2xl p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 shadow-inner pointer-events-none"></div>
+            
+            <div className="relative space-y-6">
+              <h2 className="text-2xl font-bold text-white">Withdraw Liquidity</h2>
+
+              {/* Select Token */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Select Token
-                </label>
-                <select
+                <label className="block text-sm font-medium text-white/70 mb-2">Select Token</label>
+                <select 
                   value={selectedToken}
                   onChange={(e) => setSelectedToken(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all font-mono"
                 >
                   {tokens.map((token) => (
-                    <option key={token} value={token}>
-                      {token}
-                    </option>
+                    <option key={token} value={token}>{token}</option>
                   ))}
                 </select>
               </div>
+
+              {/* Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Amount
-                </label>
+                <label className="block text-sm font-medium text-white/70 mb-2">Amount</label>
                 <input
-                  type="number"
+                  type="text"
+                  placeholder="0.00"
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 text-white placeholder-white/30 backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all font-mono"
                 />
               </div>
+
+              {/* Withdraw Button */}
               <button
                 onClick={handleWithdraw}
                 disabled={!isConnected || isPending || isConfirming || isConfirmed}
-                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                className="w-full px-6 py-4 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold text-base hover:scale-[1.01] active:scale-[0.99] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending ? "Withdrawing..." : isConfirming ? "Confirming..." : isConfirmed ? "Withdrawn ✓" : "Withdraw Liquidity"}
               </button>
@@ -252,21 +255,21 @@ export default function PoolPage() {
 
           {/* Transaction Status */}
           {hash && (
-            <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Transaction Status</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                TX: <a href={`https://sepolia.etherscan.io/tx/${hash}`} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">{hash.slice(0, 10)}...{hash.slice(-8)}</a>
+            <div className="mt-8 relative backdrop-blur-xl bg-white/5 border border-white/10 p-6">
+              <h3 className="text-lg font-semibold text-white mb-2">Transaction Status</h3>
+              <p className="text-sm text-white/60 font-mono">
+                TX: <a href={`https://sepolia.etherscan.io/tx/${hash}`} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">{hash.slice(0, 10)}...{hash.slice(-8)}</a>
               </p>
               {isConfirmed && (
-                <p className="text-green-600 dark:text-green-400 mt-2">✓ Transaction confirmed!</p>
+                <p className="text-green-400 mt-2">✓ Transaction confirmed!</p>
               )}
             </div>
           )}
 
           {/* Error Display */}
           {error && (
-            <div className="mt-4 bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-              <p className="text-sm text-red-600 dark:text-red-400">Error: {error}</p>
+            <div className="mt-4 backdrop-blur-xl bg-red-500/10 border border-red-500/20 p-4 rounded-lg">
+              <p className="text-sm text-red-400">Error: {error}</p>
             </div>
           )}
         </div>

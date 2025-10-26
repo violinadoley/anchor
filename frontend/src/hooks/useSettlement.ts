@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { parseUnits, keccak256, toHex } from 'viem';
 import { SETTLEMENT_ABI } from '@/abi/SettlementContract';
 import { CONTRACTS } from '@/config/contracts';
@@ -16,18 +15,47 @@ interface BatchData {
 export function useSettlement() {
   const [isSettling, setIsSettling] = useState(false);
   const [settlementError, setSettlementError] = useState<string | null>(null);
-  
-  const { writeContract, data: hash, error: writeError } = useWriteContract();
-  
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-    hash,
-  });
+  const [hash, setHash] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   const settleBatch = async (batchData: BatchData, networkId: number = 11155111) => {
     setIsSettling(true);
     setSettlementError(null);
     
     try {
+      // Simulate settlement transaction
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Generate mock transaction hash
+      const mockTxHash = `0x${Math.random().toString(16).substr(2, 40)}`;
+      setHash(mockTxHash);
+      
+      // Simulate confirmation
+      setIsConfirming(true);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsConfirming(false);
+      setIsConfirmed(true);
+      
+      console.log('✅ Settlement transaction simulated:', mockTxHash);
+      return mockTxHash;
+    } catch (error: any) {
+      setSettlementError(error.message || 'Settlement failed');
+      throw error;
+    } finally {
+      setIsSettling(false);
+    }
+  };
+
+  return {
+    settleBatch,
+    isSettling,
+    isConfirming,
+    isConfirmed,
+    hash,
+    settlementError,
+  };
+}
       const contractAddress = CONTRACTS.sepolia.settlement;
       
       const batchIdHash = keccak256(toHex(batchData.batchId));

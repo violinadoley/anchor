@@ -528,6 +528,17 @@ app.get('/api/intents', (req, res) => {
   }
 });
 
+// Clear all intents endpoint
+app.post('/api/clear-intents', (req, res) => {
+  intents.length = 0; // Clear the array
+  console.log('🧹 All intents cleared');
+  res.json({
+    success: true,
+    message: 'All intents cleared',
+    clearedCount: intents.length
+  });
+});
+
 app.get('/api/pool/balances', (req, res) => {
   try {
     res.json({
@@ -646,8 +657,8 @@ app.post('/api/simulate', (req, res) => {
 });
 
 // Automatic batch processing
-const MIN_BATCH_SIZE = 1; // Process immediately like a real AMM
-const BATCH_INTERVAL = 5000; // 5 seconds in milliseconds (AMM-like speed)
+const MIN_BATCH_SIZE = 2; // Wait for at least 2 intents to enable P2P matching
+const BATCH_INTERVAL = 60000; // 60 seconds in milliseconds - allows time for multiple intents to batch
 
 async function autoProcessBatch() {
   const pendingIntents = intents.filter(intent => intent.status === 'pending');
