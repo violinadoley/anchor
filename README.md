@@ -47,22 +47,6 @@ Traditional cross-chain AMMs suffer from **liquidity fragmentation** - requiring
 - Ensures 100% intent fulfillment
 - Hedging against price volatility
 
-## 🏗️ Architecture
-
-```mermaid
-graph TB
-    A[User Intent] --> B[Frontend]
-    B --> C[Backend API]
-    C --> D[Batch Engine]
-    D --> E[Netting Engine]
-    E --> F[Merkle Tree]
-    F --> G[Smart Contracts]
-    G --> H[On-Chain Settlement]
-    
-    I[Pyth Oracle] --> D
-    J[Avail Nexus] --> G
-    K[Unified Pool] --> G
-```
 
 ## 🚀 Quick Start
 
