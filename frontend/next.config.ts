@@ -1,12 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Use webpack instead of turbopack to avoid configuration conflicts
-  experimental: {
-    turbo: {
-      // Disable turbopack for now
-    }
-  },
   webpack: (config, { isServer }) => {
     // Add Buffer polyfill for browser compatibility
     if (!isServer) {
