@@ -1,0 +1,12 @@
+# Environment variables for testnet deployment
+# Copy this content to .env file and fill in your values
+
+# Private key of your testnet wallet (with testnet tokens)
+# IMPORTANT: Never commit this file to version control!
+PRIVATE_KEY=your_private_key_here
+
+# Optional: Infura/Alchemy URLs (will use public RPCs if not provided)
+SEPOLIA_URL=https://sepolia.infura.io/v3/YOUR_INFURA_KEY
+MUMBAI_URL=https://polygon-mumbai.infura.io/v3/YOUR_INFURA_KEY
+ARBITRUM_SEPOLIA_URL=https://sepolia-rollup.arbitrum.io/rpc
+OPTIMISM_SEPOLIA_URL=https://sepolia.optimism.io

@@ -1,0 +1,11 @@
+{
+  "network": "optimismSepolia",
+  "chainId": 11155420,
+  "deployer": "0xa6C1248d48b26cBC900f93E82daA926DF17A7191",
+  "factory": "0x153D41D37888F7c5dd272662551E15810e437A95",
+  "settlement": "0xd0A07e2D25194c5C39BD3D8f7CBA88A73d6EB067",
+  "tokenManager": "0x1d72b9eFaB602cE0D9Df616D4b7073dAF7f507A3",
+  "pythOracle": "0x7dbccdC61aE3e04A6bDEcFE6C00038edA924f6D7",
+  "timestamp": "2025-10-25T12:56:01.912Z",
+  "txHash": "0x6791b945dae4e0b4e709220ec0906ffd3ca0a37bbbd5ea1335e3132bdb277ddd"
+}

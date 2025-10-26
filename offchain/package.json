@@ -1,0 +1,38 @@
+{
+  "name": "anchor-batch-engine",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    "dev:watch": "nodemon --exec ts-node src/server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Off-chain batch engine for Anchor Protocol cross-chain settlement",
+  "dependencies": {
+    "@polkadot/api": "^16.4.9",
+    "@polkadot/keyring": "^13.5.7",
+    "@types/uuid": "^10.0.0",
+    "avail-js-sdk": "^0.4.2",
+    "axios": "^1.12.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.15.0",
+    "express": "^5.1.0",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.6.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.4",
+    "@types/node": "^24.9.1",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployer": "0xa6C1248d48b26cBC900f93E82daA926DF17A7191",
+  "poolAddress": "0x2132905560710a9A9D14443b7067285a246E9670",
+  "timestamp": "2025-10-25T14:37:25.278Z"
+}
